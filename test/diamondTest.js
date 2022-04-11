@@ -20,12 +20,14 @@ describe('DiamondTest', async function () {
   let receipt
   let result
   const addresses = []
+  // const FacetA = artifacts.require('FacetA')
 
   before(async function () {
     diamondAddress = await deployDiamond()
     diamondCutFacet = await ethers.getContractAt('DiamondCutFacet', diamondAddress)
     diamondLoupeFacet = await ethers.getContractAt('DiamondLoupeFacet', diamondAddress)
     ownershipFacet = await ethers.getContractAt('OwnershipFacet', diamondAddress)
+    
   })
 
   it('should have three facets -- call to facetAddresses function', async () => {
@@ -246,4 +248,33 @@ describe('DiamondTest', async function () {
     assert.sameMembers(facets[findAddressPositionInFacets(addresses[3], facets)][1], getSelectors(Test1Facet))
     assert.sameMembers(facets[findAddressPositionInFacets(addresses[4], facets)][1], getSelectors(Test2Facet))
   })
+
+
+  it('should add FacetA functions', async () => {
+    const FacetA = await ethers.getContractFactory('FacetA')
+    const facetA = await FacetA.deploy()
+
+
+    // let facetA = await FacetA.deployed();
+    let selectors = getSelectors(facetA);
+    let addresses = [];
+    addresses.push(facetA.address);
+    // let diamond  = await Diamond.deployed();
+    // let diamondCutFacet = await DiamondCutFacet.at(diamond.address);
+    await diamondCutFacet.diamondCut([[facetA.address, FacetCutAction.Add, selectors]], ethers.constants.AddressZero, '0x');
+
+    // let diamondLoupeFacet = await DiamondLoupeFacet.at(diamond.address);
+    result = await diamondLoupeFacet.facetFunctionSelectors(addresses[0]);
+    assert.sameMembers(result, selectors)
+  })
+
+it('should test function call', async () => {
+    // let diamond  = await Diamond.deployed();
+    // let facetAViaDiamond = await FacetA.at(diamond.address);
+    // const dataToStore = '0xabcdef';
+    // await facetAViaDiamond.setDataA(dataToStore);
+    // let dataA = await facetAViaDiamond.getDataA();
+    // assert.equal(dataA,web3.eth.abi.encodeParameter('bytes32', dataToStore));
+  })
+
 })
