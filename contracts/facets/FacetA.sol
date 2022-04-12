@@ -5,8 +5,9 @@ library LibA {
 
     // This struct contains state variables we care about.
         struct DiamondStorage {
-            address owner;
             bytes32 dataA;
+            uint256 digits;
+            address owner;
         }
 
         // Returns the struct from a specified position in contract storage
@@ -24,13 +25,19 @@ library LibA {
     // Our facet uses the diamond storage defined above.
 contract FacetA {
 
-    function setDataA(bytes32 _dataA) external {
+    function setDataA(bytes32 _dataA, uint _dig) external {
         LibA.DiamondStorage storage ds = LibA.diamondStorage();
         ds.dataA = _dataA;
+        ds.digits = _dig;
+        ds.owner = msg.sender;
     }
 
-    function getDataA() external view returns (bytes32) {
-        return LibA.diamondStorage().dataA;
+    function getDataA() external view returns (LibA.DiamondStorage memory) {
+
+        LibA.DiamondStorage storage  ds = LibA.diamondStorage();
+        require(ds.owner == msg.sender, "Must be owner.");
+        return ds;
+        
     }
 
 }

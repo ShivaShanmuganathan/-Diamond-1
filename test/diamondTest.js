@@ -6,7 +6,7 @@ const {
   removeSelectors,
   findAddressPositionInFacets
 } = require('../scripts/libraries/diamond.js')
-
+const { expect } = require("chai");
 const { deployDiamond } = require('../scripts/deploy.js')
 
 const { assert } = require('chai')
@@ -21,6 +21,7 @@ describe('DiamondTest', async function () {
   let result
   const addresses = []
   // const FacetA = artifacts.require('FacetA')
+  
 
   before(async function () {
     diamondAddress = await deployDiamond()
@@ -271,10 +272,24 @@ describe('DiamondTest', async function () {
 it('should test function call', async () => {
     // let diamond  = await Diamond.deployed();
     // let facetAViaDiamond = await FacetA.at(diamond.address);
-    // const dataToStore = '0xabcdef';
+    
     // await facetAViaDiamond.setDataA(dataToStore);
     // let dataA = await facetAViaDiamond.getDataA();
     // assert.equal(dataA,web3.eth.abi.encodeParameter('bytes32', dataToStore));
+    const [owner, addr1, addr2] = await ethers.getSigners();
+
+    const dataToStore = '0xabcdef';
+    const padded_data = ethers.utils.hexZeroPad(dataToStore, 32)
+    const testFacetA = await ethers.getContractAt('FacetA', diamondAddress)
+    await testFacetA.setDataA(padded_data, 200)
+    
+    await expect(testFacetA.connect(addr1).getDataA()).to.be.revertedWith('Must be owner.');
+    
+    result = await testFacetA.connect(owner).getDataA();
+    console.log(result.digits.toNumber());
+    console.log(result.owner.toString());
+    
+
   })
 
 })
