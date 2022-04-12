@@ -269,7 +269,7 @@ describe('DiamondTest', async function () {
     assert.sameMembers(result, selectors)
   })
 
-it('should test function call', async () => {
+  it('should test function call', async () => {
     // let diamond  = await Diamond.deployed();
     // let facetAViaDiamond = await FacetA.at(diamond.address);
     
@@ -281,7 +281,7 @@ it('should test function call', async () => {
     const dataToStore = '0xabcdef';
     const padded_data = ethers.utils.hexZeroPad(dataToStore, 32)
     const testFacetA = await ethers.getContractAt('FacetA', diamondAddress)
-    await testFacetA.setDataA(padded_data, 200)
+    await testFacetA.setDataA(padded_data, 500)
     
     await expect(testFacetA.connect(addr1).getDataA()).to.be.revertedWith('Must be owner.');
     
@@ -289,7 +289,76 @@ it('should test function call', async () => {
     console.log(result.digits.toNumber());
     console.log(result.owner.toString());
     
+  })
 
+
+  it('should add FacetB functions', async () => {
+    const FacetB = await ethers.getContractFactory('FacetB')
+    const facetB = await FacetB.deploy()
+
+
+    // let facetB = await FacetB.deployed();
+    let selectors = getSelectors(facetB);
+    let addresses = [];
+    addresses.push(facetB.address);
+    // let diamond  = await Diamond.deployed();
+    // let diamondCutFacet = await DiamondCutFacet.at(diamond.address);
+    await diamondCutFacet.diamondCut([[facetB.address, FacetCutAction.Add, selectors]], ethers.constants.AddressZero, '0x');
+
+    // let diamondLoupeFacet = await DiamondLoupeFacet.at(diamond.address);
+    result = await diamondLoupeFacet.facetFunctionSelectors(addresses[0]);
+    assert.sameMembers(result, selectors)
+  })
+
+
+  it('should test function call -- FacetB', async () => {
+    console.log("Testing Facet B");
+    console.log();
+    // let diamond  = await Diamond.deployed();
+    // let facetAViaDiamond = await FacetA.at(diamond.address);
+    
+    // await facetAViaDiamond.setDataA(dataToStore);
+    // let dataA = await facetAViaDiamond.getDataA();
+    // assert.equal(dataA,web3.eth.abi.encodeParameter('bytes32', dataToStore));
+    const [owner, addr1, addr2] = await ethers.getSigners();
+
+    const dataToStore = '0xabcdef';
+    const padded_data = ethers.utils.hexZeroPad(dataToStore, 32)
+    const testFacetB = await ethers.getContractAt('FacetB', diamondAddress)
+    await testFacetB.setDataB(padded_data, 200)
+    
+    await expect(testFacetB.connect(addr1).getDataB()).to.be.revertedWith('Must be owner.');
+    
+    result = await testFacetB.connect(owner).getDataB();
+    console.log(result.digits.toNumber());
+    console.log(result.owner.toString());
+    
+  })
+
+  it('should test function call -- FacetA', async () => {
+    console.log("Testing Facet A again");
+    console.log();
+
+    // let diamond  = await Diamond.deployed();
+    // let facetAViaDiamond = await FacetA.at(diamond.address);
+    
+    // await facetAViaDiamond.setDataA(dataToStore);
+    // let dataA = await facetAViaDiamond.getDataA();
+    // assert.equal(dataA,web3.eth.abi.encodeParameter('bytes32', dataToStore));
+    const [owner, addr1, addr2] = await ethers.getSigners();
+
+    const dataToStore = '0xabcdef';
+    const padded_data = ethers.utils.hexZeroPad(dataToStore, 32)
+
+    const testFacetA = await ethers.getContractAt('FacetA', diamondAddress)
+    // await testFacetA.setDataA(padded_data, 500)
+    
+    await expect(testFacetA.connect(addr1).getDataA()).to.be.revertedWith('Must be owner.');
+    
+    result = await testFacetA.connect(owner).getDataA();
+    console.log(result.digits.toNumber());
+    console.log(result.owner.toString());
+    
   })
 
 })
