@@ -31,6 +31,7 @@ contract FacetC {
         ds.dataA = _dataA;
         ds.digits = _dig;
         ds.owner = msg.sender;
+        ds.new_digits = _dig + 100;
     }
 
     function getDataC() external view returns (LibA.DiamondStorage memory) {
