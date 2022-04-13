@@ -97,6 +97,7 @@ describe('DiamondTest', async function () {
   })
 
   it('should replace supportsInterface function', async () => {
+    
     const Test1Facet = await ethers.getContractFactory('Test1Facet')
     const selectors = getSelectors(Test1Facet).get(['supportsInterface(bytes4)'])
     const testFacetAddress = addresses[3]
@@ -113,6 +114,7 @@ describe('DiamondTest', async function () {
     }
     result = await diamondLoupeFacet.facetFunctionSelectors(testFacetAddress)
     assert.sameMembers(result, getSelectors(Test1Facet))
+
   })
 
   it('should add test2 functions', async () => {
@@ -360,5 +362,53 @@ describe('DiamondTest', async function () {
     console.log(result.owner.toString());
     
   })
+
+
+  it('should add FacetC functions', async () => {
+    const FacetC = await ethers.getContractFactory('FacetC')
+    const facetC = await FacetC.deploy()
+
+
+    // let facetC = await FacetC.deployed();
+    let selectors = getSelectors(facetC);
+    let addresses = [];
+    addresses.push(facetC.address);
+    // let diamond  = await Diamond.deployed();
+    // let diamondCutFacet = await DiamondCutFacet.at(diamond.address);
+    await diamondCutFacet.diamondCut([[facetC.address, FacetCutAction.Add, selectors]], ethers.constants.AddressZero, '0x');
+
+    // let diamondLoupeFacet = await DiamondLoupeFacet.at(diamond.address);
+    result = await diamondLoupeFacet.facetFunctionSelectors(addresses[0]);
+    assert.sameMembers(result, selectors)
+  })
+
+  it('should test function call -- FacetC', async () => {
+    console.log("Testing Facet C");
+    console.log();
+    // let diamond  = await Diamond.deployed();
+    // let facetAViaDiamond = await FacetA.at(diamond.address);
+    
+    // await facetAViaDiamond.setDataA(dataToStore);
+    // let dataA = await facetAViaDiamond.getDataA();
+    // assert.equal(dataA,web3.eth.abi.encodeParameter('bytes32', dataToStore));
+    const [owner, addr1, addr2] = await ethers.getSigners();
+
+    const dataToStore = '0xabcdef';
+    const padded_data = ethers.utils.hexZeroPad(dataToStore, 32)
+    const testFacetC = await ethers.getContractAt('FacetC', diamondAddress)
+    await testFacetC.setDataC(padded_data, 200)
+    
+    await expect(testFacetC.connect(addr1).getDataC()).to.be.revertedWith('Must be owner.');
+    
+    result = await testFacetC.connect(owner).getDataC();
+    console.log(result.digits.toNumber());
+    console.log("FacetC new state variable");
+    console.log("new_digits ", result.new_digits.toNumber());
+    console.log();
+    console.log(result.owner.toString());
+   
+  })
+
+
 
 })
