@@ -59,6 +59,12 @@ The `contracts/facets/DiamondCutFacet.sol` file shows how to implement the `diam
 
 The `contracts/facets/DiamondLoupeFacet.sol` file shows how to implement the four standard loupe functions.
 
+The `contracts/facets/FacetA.sol` file shows how to create a facet, diamond storage and implement its functions.
+
+The `contracts/facets/FacetB.sol` file shows how to create a facet, access existing facet's diamond storage and implement its functions.
+
+The `contracts/facets/FacetC.sol` file shows how to create a facet, access existing facet's diamond storage and implement its functions.
+
 The `contracts/libraries/LibDiamond.sol` file shows how to implement Diamond Storage and a `diamondCut` internal function.
 
 The `scripts/deploy.js` file shows how to deploy a diamond.
